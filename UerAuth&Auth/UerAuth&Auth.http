@@ -1,0 +1,6 @@
+@UerAuth_Auth_HostAddress = http://localhost:5084
+
+GET {{UerAuth_Auth_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
