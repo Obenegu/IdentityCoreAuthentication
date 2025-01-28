@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace UerAuth_Auth.Models.Auth.SignUp
+namespace UserManagement.Service.Models.Auth.SignUp
 {
     public class RegisterUser
     {
@@ -11,5 +11,7 @@ namespace UerAuth_Auth.Models.Auth.SignUp
         public string? Email { get; set; }
         [Required(ErrorMessage = "Password is required")]
         public string? Password { get; set; }
+        [Required(ErrorMessage = "Role is required")]
+        public List<string>? Roles { get; set; }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using UerAuth_Auth.Models.Auth.SignUp;
 using UerAuth_Auth.Models;
-using UerAuth_Auth.Models.Auth.Login;
 using UserManagement.Service.Services;
 using UserManagement.Service.Models;
 using System.IdentityModel.Tokens.Jwt;
@@ -11,6 +9,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using System.ComponentModel.DataAnnotations;
+using UserManagement.Service.Models.Auth.SignUp;
+using UserManagement.Service.Models.Auth.Login;
 
 namespace UerAuth_Auth.Controllers
 {
@@ -21,69 +21,37 @@ namespace UerAuth_Auth.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmailService _emailService;
+        private readonly IUserManagement _user;
         private readonly IConfiguration _configuration;
 
-        public AuthController(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IEmailService emailService, IConfiguration configuration)
+        public AuthController(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IEmailService emailService, IConfiguration configuration, IUserManagement user)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _emailService = emailService;
             _configuration = configuration;
+            _user = user;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Register([FromBody] RegisterUser registerUser, string role)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterUser registerUser)
         {
-            // user already exists
-            var userExist = await _userManager.FindByEmailAsync(registerUser.Email!);
-            if (userExist != null)
+
+            var tokenResponse = await _user.CreateUserWithTokenAsync(registerUser);
+            if(tokenResponse.IsSuccess)
             {
-                return StatusCode(StatusCodes.Status403Forbidden,
-                    new Response { Status = "Error", Message = "user Already exist!" }
-                    );
+                await _user.AssignRoleToUserAsync(registerUser.Roles!, tokenResponse.Response!.User!);
+                var confirmationLink = Url.Action(nameof(ConfirmEmail), "Auth",
+                    new { tokenResponse.Response.Token, email = registerUser.Email }, Request.Scheme);
+                var message = new Message(new string[] { registerUser.Email! }, "Confirmation email link", confirmationLink!);
+                _emailService.SendEmail(message);
+
+                return StatusCode(StatusCodes.Status201Created,
+                            new Response { Status = "Success", Message = "User account created successfully" });
             }
 
-            // user does not exist
-            IdentityUser user = new()
-            {
-                Email = registerUser.Email,
-                SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = registerUser.Name,
-            };
-
-
-           if( await _roleManager.RoleExistsAsync(role))
-            {
-            var result = await _userManager.CreateAsync(user, registerUser.Password!);
-                if (!result.Succeeded)
-                {
-                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                    return StatusCode(StatusCodes.Status500InternalServerError,
-                        new Response
-                        {
-                            Status = "Error",
-                            Message = $"Failed to create user: {errors}"
-                        });
-                }
-
-                  await _userManager.AddToRoleAsync(user, role);
-
-                //Add token to verify email
-                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var confirmationLink = Url.Action(nameof(ConfirmEmail), "Auth", 
-                    new { token, email = user.Email }, Request.Scheme);
-                var message = new Message(new string[] { user.Email!}, "Confirmation email link", confirmationLink!);
-                _emailService.SendEmail(message);   
-
-
-                return StatusCode(StatusCodes.Status200OK,
-                    new Response { Status = "Success", Message = $"User created & email sent to {user.Email} successfully" });
-            } else
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    new Response { Status = "Error", Message = "User role does not exist" });
-            }
-
+            return StatusCode(StatusCodes.Status201Created,
+                            new Response { IsSuccess = false, Message = tokenResponse.Message });
         }
 
         [HttpPost]
@@ -96,7 +64,7 @@ namespace UerAuth_Auth.Controllers
             {
                 var authClaims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.Email, user.Email!),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 };
                 //add roles to token
@@ -172,14 +140,14 @@ namespace UerAuth_Auth.Controllers
 
         }
 
-        [HttpPost]
+        [HttpPost("forgotPassword")]
         [AllowAnonymous]
         public async Task<IActionResult> ForgotPassword([Required] string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if(user != null)
             {
-                await _userManager.GeneratePasswordResetTokenAsync(user);
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var forgotPasswordLink = Url.Action(nameof(ResetPassword), "Auth",
                     new { token, email = user.Email }, Request.Scheme
                     );
@@ -211,24 +179,24 @@ namespace UerAuth_Auth.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ResetPassword(ResetPassword resetPassword)
         {
-            var user = await _userManager.FindByEmailAsync(resetPassword.Email);
+            var user = await _userManager.FindByEmailAsync(resetPassword.Email!);
             if (user != null)
             {
-                var result = _userManager.ResetPasswordAsync(user, resetPassword.Token, resetPassword.Password);
-                if(!result.IsCompletedSuccessfully)
+                var result = await _userManager.ResetPasswordAsync(user, resetPassword.Token!, resetPassword.Password!);
+                if(!result.Succeeded)
                 {
-                    foreach(var error in result.Exception)
+                    foreach(var error in result.Errors)
                     {
-                        ModelState.AddModelError(error.Message);
+                        ModelState.AddModelError(error.Code, error.Description);
                     }
                     return Ok(result);
                 }
-                return StatusCode(StatusCodes.Status200OK, 
-                    new Response { Status = "Success", Message = $"Password has been changed" })
+                return StatusCode(StatusCodes.Status200OK,
+                    new Response { Status = "Success", Message = $"Password has been changed" });
                
             }
             return StatusCode(StatusCodes.Status400BadRequest,
-            new Response { Status = "Error", Message = $"User with Email {user.Email} was not found" }
+            new Response { Status = "Error", Message = $"User with Email {user!.Email} was not found" }
                         );
         }
 

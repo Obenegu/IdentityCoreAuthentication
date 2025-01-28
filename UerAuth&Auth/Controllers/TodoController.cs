@@ -38,7 +38,7 @@ namespace UerAuth_Auth.Controllers
                     Title = task.Title,
                     Description = task.Description,
                     Id = task.Id,
-                    IdentityUserId = user.Id,
+                    IdentityUserId = user!.Id,
                     isCompleted = task.isCompleted
                 });
 

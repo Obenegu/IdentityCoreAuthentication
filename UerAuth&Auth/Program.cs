@@ -41,7 +41,7 @@ builder.Services.Configure<IdentityOptions>(opts =>
 
 //configure reset password
 builder.Services.Configure<DataProtectionTokenProviderOptions>(opts =>
-    opts.TokenLifespan = TimeSpan.FromHours(3))
+    opts.TokenLifespan = TimeSpan.FromHours(3));
 
 //Adding Authentication
 builder.Services.AddAuthentication(options =>
@@ -70,6 +70,7 @@ var emailConfig = builder.Configuration.GetSection("EmailConfiguration")
 builder.Services.AddSingleton(emailConfig!);
 
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IUserManagement, UserManagementService>();
 
 // Add services to the container.
 

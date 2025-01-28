@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace UerAuth_Auth.Models.Auth.Login
+namespace UserManagement.Service.Models.Auth.Login
 {
     public class LoginUser
     {
