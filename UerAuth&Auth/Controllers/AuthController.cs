@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Authorization;
 using System.ComponentModel.DataAnnotations;
 using UserManagement.Service.Models.Auth.SignUp;
 using UserManagement.Service.Models.Auth.Login;
+using User.Management.Data.Data;
+using System.Security.Cryptography;
+using UserManagement.Service.Models.Auth.User;
 
 namespace UerAuth_Auth.Controllers
 {
@@ -18,13 +21,13 @@ namespace UerAuth_Auth.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmailService _emailService;
         private readonly IUserManagement _user;
         private readonly IConfiguration _configuration;
 
-        public AuthController(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IEmailService emailService, IConfiguration configuration, IUserManagement user)
+        public AuthController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IEmailService emailService, IConfiguration configuration, IUserManagement user)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -62,25 +65,8 @@ namespace UerAuth_Auth.Controllers
             var user = await _userManager.FindByEmailAsync(loginUser.Email!);
             if(user != null && await _userManager.CheckPasswordAsync(user, loginUser.Password!))
             {
-                var authClaims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Email, user.Email!),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                };
-                //add roles to token
-                var userRoles = await _userManager.GetRolesAsync(user);
-                foreach(var role in userRoles)
-                {
-                    authClaims.Add(new Claim(ClaimTypes.Role, role));
-                }
-
-                var jwtToken = GetToken(authClaims);
-
-                return Ok(new {
-                    token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
-                    expiration = jwtToken.ValidTo 
-                });
-                //return Ok(user); 
+                var serviceResponse = await _user.GetJwtTokenAsync(user);
+                return Ok(serviceResponse);
             } else
             {
                 return Unauthorized();
@@ -200,20 +186,21 @@ namespace UerAuth_Auth.Controllers
                         );
         }
 
-        private JwtSecurityToken GetToken(List<Claim> authClaims)
-        {
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]!));
-            var token = new JwtSecurityToken(
-                issuer: _configuration["JWT:ValidIssuer"],
-                audience: _configuration["JWT:ValidAudience"],
-                expires: DateTime.Now.AddHours(3),
-                claims: authClaims,
-                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-                );
+        [HttpPost("RefreshTokem")]
 
-            return token;
+        public async Task<IActionResult> RefreshToken(LoginResponse tokens)
+        {
+            var jwt = await _user.RenewAccessTokenAsync(tokens);
+            if (jwt.IsSuccess)
+            {
+                return Ok(jwt);
+            }
+            return StatusCode(StatusCodes.Status404NotFound,
+                new Response { Status = "Success", Message = "Invalid Code", IsSuccess = true}
+                );
         }
+     
     }
 
-    
+
 }

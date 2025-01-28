@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace UerAuth_Auth.Migrations
+namespace User.Management.Data.Migrations
 {
     /// <inheritdoc />
     public partial class InitialMigration : Migration
@@ -32,6 +32,8 @@ namespace UerAuth_Auth.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TokenExpiry = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -158,14 +160,35 @@ namespace UerAuth_Auth.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Todos",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    isCompleted = table.Column<bool>(type: "bit", nullable: false),
+                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Todos", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Todos_AspNetUsers_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "0a161597-e122-4b87-85ac-2a17882ff112", "2", "User", "User" },
-                    { "3b59a5a6-c30a-4d9b-8015-3a9fd5b7e7d2", "3", "HR", "HR" },
-                    { "6fa26e89-dd4a-4820-bd02-fc657a4910ff", "1", "Admin", "Admin" }
+                    { "0a46c52b-cf99-4012-a565-a242f9960abd", "1", "Admin", "Admin" },
+                    { "8e9d19d9-a47e-41e3-b2b7-16bb831e3421", "2", "User", "User" },
+                    { "96c7ede7-565f-4c22-9870-595f2db3dcb4", "3", "HR", "HR" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -206,6 +229,11 @@ namespace UerAuth_Auth.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Todos_ApplicationUserId",
+                table: "Todos",
+                column: "ApplicationUserId");
         }
 
         /// <inheritdoc />
@@ -225,6 +253,9 @@ namespace UerAuth_Auth.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Todos");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

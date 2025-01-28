@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UerAuth&Auth", "UerAuth&Aut
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserManagement.Service", "UserManagement.Service\UserManagement.Service.csproj", "{65843EE4-11F7-4184-8044-9D01ADF1B95E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "User.Management.Data", "User.Management.Data\User.Management.Data.csproj", "{0F18D018-A5A0-4B62-A764-B008AB1CBEB5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{65843EE4-11F7-4184-8044-9D01ADF1B95E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65843EE4-11F7-4184-8044-9D01ADF1B95E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65843EE4-11F7-4184-8044-9D01ADF1B95E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F18D018-A5A0-4B62-A764-B008AB1CBEB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F18D018-A5A0-4B62-A764-B008AB1CBEB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F18D018-A5A0-4B62-A764-B008AB1CBEB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F18D018-A5A0-4B62-A764-B008AB1CBEB5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

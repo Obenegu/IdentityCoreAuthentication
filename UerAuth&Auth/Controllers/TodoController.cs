@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using UerAuth_Auth.Models;
 using UerAuth_Auth.Models.Dto;
+using User.Management.Data.Data;
 
 namespace UerAuth_Auth.Controllers
 {
@@ -38,7 +39,7 @@ namespace UerAuth_Auth.Controllers
                     Title = task.Title,
                     Description = task.Description,
                     Id = task.Id,
-                    IdentityUserId = user!.Id,
+                    ApplicationUserId = user!.Id,
                     isCompleted = task.isCompleted
                 });
 
@@ -70,7 +71,7 @@ namespace UerAuth_Auth.Controllers
             }
 
             var todo = await _context.Todos
-                .Where(t => t.IdentityUserId == user.Id)
+                .Where(t => t.ApplicationUserId == user.Id)
                 .Select(t => new ToDoDto() 
             { 
                 Title=t.Title, 
@@ -140,7 +141,7 @@ namespace UerAuth_Auth.Controllers
                     Title = t.Title,
                     Description = t.Description,
                     Id = t.Id,
-                    IdentityUserId = t.IdentityUserId,
+                    ApplicationUserId = t.ApplicationUserId,
                     isCompleted = t.isCompleted
                 }).ToListAsync();
 

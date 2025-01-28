@@ -8,7 +8,7 @@ namespace UerAuth_Auth.Models.Dto
         public string? Title { get; set; }
         public string? Description { get; set; }
         public bool isCompleted { get; set; }
-        public string? IdentityUserId { get; set; }
+        public string? ApplicationUserId { get; set; }
         public string? UserName { get; set; }
     }
 }

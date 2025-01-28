@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Security.Claims;
 using UerAuth_Auth.Models;
 using UerAuth_Auth.Models.Dto;
+using User.Management.Data.Data;
 
 namespace UerAuth_Auth.Controllers
 {
@@ -30,10 +31,10 @@ namespace UerAuth_Auth.Controllers
                     Title = t.Title,
                     Description = t.Description,
                     Id = t.Id,
-                    IdentityUserId = t.IdentityUserId,
+                    ApplicationUserId = t.ApplicationUserId,
                     isCompleted = t.isCompleted,
                     UserName = _context.Users
-                        .Where(u => u.Id == t.IdentityUserId)
+                        .Where(u => u.Id == t.ApplicationUserId)
                         .Select(u => u.UserName)
                         .FirstOrDefault()
                 }).ToListAsync();
@@ -56,7 +57,7 @@ namespace UerAuth_Auth.Controllers
             {
                 Title = task.Title,
                 Description = task.Description,
-                IdentityUserId = user.Id,
+                ApplicationUserId = user.Id,
                 isCompleted = task.isCompleted
             });
 
