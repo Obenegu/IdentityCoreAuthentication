@@ -41,7 +41,7 @@ builder.Services.Configure<IdentityOptions>(opts =>
 
 //configure reset password
 builder.Services.Configure<DataProtectionTokenProviderOptions>(opts =>
-    opts.TokenLifespan = TimeSpan.FromHours(3))
+    opts.TokenLifespan = TimeSpan.FromHours(3));
 
 //Adding Authentication
 builder.Services.AddAuthentication(options =>

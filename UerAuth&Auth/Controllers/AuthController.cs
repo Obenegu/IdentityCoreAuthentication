@@ -31,7 +31,7 @@ namespace UerAuth_Auth.Controllers
             _configuration = configuration;
         }
 
-        [HttpPost]
+        [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUser registerUser, string role)
         {
             // user already exists
@@ -172,14 +172,14 @@ namespace UerAuth_Auth.Controllers
 
         }
 
-        [HttpPost]
+        [HttpPost("forgotPassword")]
         [AllowAnonymous]
         public async Task<IActionResult> ForgotPassword([Required] string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if(user != null)
             {
-                await _userManager.GeneratePasswordResetTokenAsync(user);
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var forgotPasswordLink = Url.Action(nameof(ResetPassword), "Auth",
                     new { token, email = user.Email }, Request.Scheme
                     );
@@ -211,20 +211,20 @@ namespace UerAuth_Auth.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ResetPassword(ResetPassword resetPassword)
         {
-            var user = await _userManager.FindByEmailAsync(resetPassword.Email);
+            var user = await _userManager.FindByEmailAsync(resetPassword.Email!);
             if (user != null)
             {
-                var result = _userManager.ResetPasswordAsync(user, resetPassword.Token, resetPassword.Password);
-                if(!result.IsCompletedSuccessfully)
+                var result = await _userManager.ResetPasswordAsync(user, resetPassword.Token!, resetPassword.Password!);
+                if(!result.Succeeded)
                 {
-                    foreach(var error in result.Exception)
+                    foreach(var error in result.Errors)
                     {
-                        ModelState.AddModelError(error.Message);
+                        ModelState.AddModelError(error.Code, error.Description);
                     }
                     return Ok(result);
                 }
-                return StatusCode(StatusCodes.Status200OK, 
-                    new Response { Status = "Success", Message = $"Password has been changed" })
+                return StatusCode(StatusCodes.Status200OK,
+                    new Response { Status = "Success", Message = $"Password has been changed" });
                
             }
             return StatusCode(StatusCodes.Status400BadRequest,

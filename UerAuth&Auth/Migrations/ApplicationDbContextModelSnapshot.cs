@@ -51,21 +51,21 @@ namespace UerAuth_Auth.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "3cf4e0a3-12a5-48f3-8989-06ddeae9c5c5",
+                            Id = "549d1c96-2c51-42fc-8780-3d4de837cdcf",
                             ConcurrencyStamp = "1",
                             Name = "Admin",
                             NormalizedName = "Admin"
                         },
                         new
                         {
-                            Id = "0f92b17f-7902-4109-9da9-e650f97a542e",
+                            Id = "998772bc-6141-4ba4-be83-b2a265dd0531",
                             ConcurrencyStamp = "2",
                             Name = "User",
                             NormalizedName = "User"
                         },
                         new
                         {
-                            Id = "6a474702-59c7-47f9-9b2b-f668a779c4a6",
+                            Id = "7402b600-fa8c-447e-9634-e8b704424708",
                             ConcurrencyStamp = "3",
                             Name = "HR",
                             NormalizedName = "HR"

@@ -158,14 +158,35 @@ namespace UerAuth_Auth.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Todos",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    isCompleted = table.Column<bool>(type: "bit", nullable: false),
+                    IdentityUserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Todos", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Todos_AspNetUsers_IdentityUserId",
+                        column: x => x.IdentityUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "0a161597-e122-4b87-85ac-2a17882ff112", "2", "User", "User" },
-                    { "3b59a5a6-c30a-4d9b-8015-3a9fd5b7e7d2", "3", "HR", "HR" },
-                    { "6fa26e89-dd4a-4820-bd02-fc657a4910ff", "1", "Admin", "Admin" }
+                    { "549d1c96-2c51-42fc-8780-3d4de837cdcf", "1", "Admin", "Admin" },
+                    { "7402b600-fa8c-447e-9634-e8b704424708", "3", "HR", "HR" },
+                    { "998772bc-6141-4ba4-be83-b2a265dd0531", "2", "User", "User" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -206,6 +227,11 @@ namespace UerAuth_Auth.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Todos_IdentityUserId",
+                table: "Todos",
+                column: "IdentityUserId");
         }
 
         /// <inheritdoc />
@@ -225,6 +251,9 @@ namespace UerAuth_Auth.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Todos");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
